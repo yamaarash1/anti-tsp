@@ -1,0 +1,15 @@
+import math
+
+
+def haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """2点間の距離をkm単位で返す (Haversine公式)"""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dlng / 2) ** 2
+    )
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
