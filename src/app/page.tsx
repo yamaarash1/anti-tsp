@@ -34,7 +34,8 @@ export default function Home() {
       const res = await solveRoutes(locs);
       setResult(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "エラーが発生しました");
+      const msg = e instanceof Error ? e.message : "エラーが発生しました";
+      setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,8 @@ export default function Home() {
       const res = await solveRoutes(locs);
       setResult(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "エラーが発生しました");
+      const msg = e instanceof Error ? e.message : "エラーが発生しました";
+      setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
     } finally {
       setLoading(false);
     }

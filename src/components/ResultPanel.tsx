@@ -9,9 +9,11 @@ interface Props {
 
 export default function ResultPanel({ result, locations }: Props) {
   const diff =
-    ((result.longest.distance_km - result.shortest.distance_km) /
-      result.shortest.distance_km) *
-    100;
+    result.shortest.distance_km > 0
+      ? ((result.longest.distance_km - result.shortest.distance_km) /
+          result.shortest.distance_km) *
+        100
+      : 0;
 
   const routeNames = (order: number[]) =>
     order.map((i) => locations[i].name).join(" → ") +

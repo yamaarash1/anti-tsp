@@ -1,3 +1,8 @@
+# ポート設定
+
+フロントエンド（Next.js）: http://localhost:2000
+バックエンド（Flask API）: http://localhost:2001
+DBファイル: api/data2001/city_sets.json
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

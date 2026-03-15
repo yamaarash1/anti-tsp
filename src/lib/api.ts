@@ -8,8 +8,8 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const err = await res.json().catch(() => ({ error: `サーバーに接続できません (HTTP ${res.status})` }));
+    throw new Error(err.error || `サーバーエラー (HTTP ${res.status})`);
   }
   return res.json();
 }

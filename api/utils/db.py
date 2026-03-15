@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent.parent / "data2001"
 
 
 def _ensure_data_dir():
