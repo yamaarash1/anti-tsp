@@ -12,6 +12,7 @@ from geocode import geocode
 from cities import list_city_sets_route, create_city_set, delete_city_set_route
 from users import register_route, login_route, get_me_route, update_me_route, get_users_route
 from history import get_history_route
+from graph import get_graph_points, get_graph_edges, solve_graph_route
 
 app.add_url_rule("/api/solve", view_func=solve_route, methods=["POST"])
 app.add_url_rule("/api/geocode", view_func=geocode, methods=["POST"])
@@ -24,6 +25,9 @@ app.add_url_rule("/api/users/me", view_func=get_me_route, methods=["GET"])
 app.add_url_rule("/api/users/me", endpoint="update_me", view_func=update_me_route, methods=["PUT"])
 app.add_url_rule("/api/users", view_func=get_users_route, methods=["GET"])
 app.add_url_rule("/api/history", view_func=get_history_route, methods=["GET"])
+app.add_url_rule("/api/graph/points", view_func=get_graph_points, methods=["GET"])
+app.add_url_rule("/api/graph/edges", view_func=get_graph_edges, methods=["GET"])
+app.add_url_rule("/api/graph/solve", view_func=solve_graph_route, methods=["POST"])
 
 _indexes_done = False
 

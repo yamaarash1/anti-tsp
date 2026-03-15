@@ -42,3 +42,30 @@ export interface CalculationHistory {
   calculated_at: string;
   user?: User;
 }
+
+// === Graph ===
+
+export interface GraphPoint {
+  name: string;
+  label?: string;
+  x: number;
+  y: number;
+}
+
+export interface GraphEdge {
+  from: string;
+  to: string;
+  distance: number;
+}
+
+export interface GraphPath {
+  path: string[];
+  distance: number;
+}
+
+export interface GraphSolveResult {
+  shortest: GraphPath;
+  longest: GraphPath;
+  points: GraphPoint[];
+  edges: GraphEdge[];
+}

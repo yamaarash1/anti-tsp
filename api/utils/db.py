@@ -39,6 +39,12 @@ def ensure_indexes():
     get_collection("city_sets").create_index(
         [("user_id", ASCENDING)], name="idx_city_sets_user_id",
     )
+    get_collection("graph_points").create_index(
+        [("name", ASCENDING)], unique=True, name="idx_graph_points_name",
+    )
+    get_collection("graph_edges").create_index(
+        [("from", ASCENDING), ("to", ASCENDING)], name="idx_graph_edges",
+    )
     print("[DB] Indexes ensured.")
 
 
@@ -212,3 +218,15 @@ def find_city_set(set_id: str) -> dict | None:
     if doc:
         doc["_id"] = str(doc["_id"])
     return doc
+
+
+# === Graph ===
+
+def load_graph_points() -> list[dict]:
+    docs = list(get_collection("graph_points").find({}, {"_id": 0}))
+    return docs
+
+
+def load_graph_edges() -> list[dict]:
+    docs = list(get_collection("graph_edges").find({}, {"_id": 0}))
+    return docs

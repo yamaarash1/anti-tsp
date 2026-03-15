@@ -194,3 +194,45 @@ for h in db.calculation_history.find().sort("calculated_at", -1):
           f"最長: {h['result']['longest']['distance_km']}km / "
           f"最短: {h['result']['shortest']['distance_km']}km | "
           f"{h['calculated_at']}")
+
+# === グラフデータ ===
+print("\nSeeding graph data...")
+db.graph_points.delete_many({})
+db.graph_edges.delete_many({})
+
+GRAPH_POINTS = [
+    {"name": "A", "label": "Alpha",   "x": 0, "y": 5},
+    {"name": "B", "label": "Bravo",   "x": 2, "y": 8},
+    {"name": "C", "label": "Charlie", "x": 5, "y": 8},
+    {"name": "D", "label": "Delta",   "x": 8, "y": 7},
+    {"name": "E", "label": "Echo",    "x": 2, "y": 4},
+    {"name": "F", "label": "Foxtrot", "x": 5, "y": 4},
+    {"name": "G", "label": "Golf",    "x": 3, "y": 2},
+    {"name": "H", "label": "Hotel",   "x": 1, "y": 0},
+    {"name": "I", "label": "India",   "x": 5, "y": 0},
+    {"name": "J", "label": "Juliet",  "x": 8, "y": 1},
+]
+
+GRAPH_EDGES = [
+    {"from": "A", "to": "B", "distance": 3.6},
+    {"from": "A", "to": "E", "distance": 2.2},
+    {"from": "B", "to": "C", "distance": 3.0},
+    {"from": "B", "to": "E", "distance": 4.0},
+    {"from": "C", "to": "D", "distance": 3.2},
+    {"from": "C", "to": "F", "distance": 4.0},
+    {"from": "D", "to": "F", "distance": 4.2},
+    {"from": "D", "to": "J", "distance": 6.0},
+    {"from": "E", "to": "F", "distance": 3.0},
+    {"from": "E", "to": "G", "distance": 2.2},
+    {"from": "E", "to": "H", "distance": 4.1},
+    {"from": "F", "to": "G", "distance": 2.8},
+    {"from": "F", "to": "I", "distance": 4.0},
+    {"from": "G", "to": "H", "distance": 2.8},
+    {"from": "G", "to": "I", "distance": 2.8},
+    {"from": "I", "to": "J", "distance": 3.2},
+]
+
+db.graph_points.insert_many(GRAPH_POINTS)
+db.graph_edges.insert_many(GRAPH_EDGES)
+print(f"  graph_points: {len(GRAPH_POINTS)} 件")
+print(f"  graph_edges: {len(GRAPH_EDGES)} 件")

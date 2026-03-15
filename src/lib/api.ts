@@ -1,4 +1,4 @@
-import { Location, SolveResult, CitySet, User, CalculationHistory } from "./types";
+import { Location, SolveResult, CitySet, User, CalculationHistory, GraphPoint, GraphEdge, GraphSolveResult } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -94,4 +94,23 @@ export async function getHistory(userId: string, limit: number = 50): Promise<Ca
     `/history?user_id=${encodeURIComponent(userId)}&limit=${limit}`
   );
   return data.history;
+}
+
+// === Graph ===
+
+export async function fetchGraphPoints(): Promise<GraphPoint[]> {
+  return fetchJSON<GraphPoint[]>("/graph/points");
+}
+
+export async function fetchGraphEdges(): Promise<GraphEdge[]> {
+  return fetchJSON<GraphEdge[]>("/graph/edges");
+}
+
+export async function solveGraph(start: string, end: string, userId?: string): Promise<GraphSolveResult> {
+  const body: Record<string, unknown> = { start, end };
+  if (userId) body.user_id = userId;
+  return fetchJSON<GraphSolveResult>("/graph/solve", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
