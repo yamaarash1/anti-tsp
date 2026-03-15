@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,10 @@ export default function RegisterPage() {
     if (!username || !email || !password) return;
     if (password.length < 6) {
       setError("パスワードは6文字以上にしてください");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("パスワードが一致しません");
       return;
     }
     setLoading(true);
@@ -76,6 +81,20 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded border border-gray-300 px-3 py-2"
               placeholder="6文字以上"
+              required
+              minLength={6}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              パスワード（確認） <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded border border-gray-300 px-3 py-2"
+              placeholder="もう一度入力"
               required
               minLength={6}
             />
