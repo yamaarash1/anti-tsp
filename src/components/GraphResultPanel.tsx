@@ -18,7 +18,7 @@ export default function GraphResultPanel({ result }: Props) {
 
       <div className="rounded border border-blue-300 bg-blue-50 p-3">
         <h3 className="font-semibold text-blue-700">
-          最短経路 (Dijkstra) — {shortest.distance}
+          最短経路 — {shortest.distance}
         </h3>
         <p className="mt-1 text-sm text-blue-600">{shortest.path.join(" → ")}</p>
         <p className="text-xs text-blue-400">{shortest.path.length} ノード</p>
@@ -26,7 +26,7 @@ export default function GraphResultPanel({ result }: Props) {
 
       <div className="rounded border border-red-300 bg-red-50 p-3">
         <h3 className="font-semibold text-red-700">
-          最長経路 (DFS全探索) — {longest.distance}
+          最長経路 (ビットDP) — {longest.distance}
         </h3>
         <p className="mt-1 text-sm text-red-600">{longest.path.join(" → ")}</p>
         <p className="text-xs text-red-400">{longest.path.length} ノード</p>

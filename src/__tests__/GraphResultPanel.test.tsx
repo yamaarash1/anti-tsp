@@ -21,7 +21,7 @@ describe("GraphResultPanel", () => {
 
   test("最長経路ヘッダーに距離が含まれる", () => {
     render(<GraphResultPanel result={mockResult} />);
-    expect(screen.getByText(/最長経路.*34\.5/)).toBeInTheDocument();
+    expect(screen.getByText(/最長経路.*ビットDP.*34\.5/)).toBeInTheDocument();
   });
 
   test("最短経路がA → E → G → I → J形式で表示される", () => {
