@@ -4,7 +4,7 @@ from flask_cors import CORS
 from utils.db import ensure_indexes
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # 各モジュールのルートを登録
 from solve import solve_route
@@ -28,6 +28,13 @@ app.add_url_rule("/api/history", view_func=get_history_route, methods=["GET"])
 app.add_url_rule("/api/graph/points", view_func=get_graph_points, methods=["GET"])
 app.add_url_rule("/api/graph/edges", view_func=get_graph_edges, methods=["GET"])
 app.add_url_rule("/api/graph/solve", view_func=solve_graph_route, methods=["POST"])
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
 
 _indexes_done = False
 
