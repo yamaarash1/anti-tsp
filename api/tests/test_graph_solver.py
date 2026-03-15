@@ -5,7 +5,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.graph_solver import solve_graph, _dijkstra, _longest_path_dfs, _build_adj
+from utils.graph_solver import solve_graph, _dijkstra, _longest_path_bitdp, _build_adj
 
 # テスト用のエッジデータ（本番と同じ）
 EDGES = [
@@ -123,10 +123,12 @@ class TestEdgeCases:
 
     def test_same_start_end_raises_or_empty(self):
         """同じ始点終点は空パス"""
-        # ソルバーレベルではDFSが即終了
         adj = _build_adj(EDGES)
-        r = _longest_path_dfs("A", "A", adj)
-        # start==endの場合、DFSは即マッチで距離0
+        all_nodes = set()
+        for e in EDGES:
+            all_nodes.add(e["from"])
+            all_nodes.add(e["to"])
+        r = _longest_path_bitdp("A", "A", adj, all_nodes)
         assert r["distance"] == 0
 
     def test_disconnected_graph(self):
