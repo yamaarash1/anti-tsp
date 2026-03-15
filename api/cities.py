@@ -1,21 +1,20 @@
 import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify
-from utils.db import load_city_sets, save_city_sets
+from utils.db import load_city_sets, save_city_set, delete_city_set as db_delete, find_city_set
 
 app = Flask(__name__)
 
 
 @app.route("/api/cities", methods=["GET"])
 def list_city_sets():
-    sets = load_city_sets()
     set_id = request.args.get("id")
     if set_id:
-        found = next((s for s in sets if s["id"] == set_id), None)
+        found = find_city_set(set_id)
         if not found:
             return jsonify({"error": "見つかりません"}), 404
         return jsonify(found)
-    return jsonify({"city_sets": sets})
+    return jsonify({"city_sets": load_city_sets()})
 
 
 @app.route("/api/cities", methods=["POST"])
@@ -26,28 +25,23 @@ def create_city_set():
     if not name or not locations:
         return jsonify({"error": "name と locations が必要です"}), 400
 
-    sets = load_city_sets()
     new_set = {
         "id": str(uuid.uuid4()),
         "name": name,
         "locations": locations,
         "created_at": datetime.utcnow().isoformat(),
     }
-    sets.append(new_set)
-    save_city_sets(sets)
+    save_city_set(new_set)
     return jsonify(new_set), 201
 
 
 @app.route("/api/cities", methods=["DELETE"])
-def delete_city_set():
+def delete_city_set_route():
     set_id = request.args.get("id")
     if not set_id:
         return jsonify({"error": "id が必要です"}), 400
 
-    sets = load_city_sets()
-    new_sets = [s for s in sets if s["id"] != set_id]
-    if len(new_sets) == len(sets):
+    if not db_delete(set_id):
         return jsonify({"error": "見つかりません"}), 404
 
-    save_city_sets(new_sets)
     return jsonify({"ok": True})
