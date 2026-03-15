@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-import HistoryPanel from "@/components/HistoryPanel";
 import PointSelector from "@/components/PointSelector";
 import GraphView from "@/components/GraphView";
 import GraphResultPanel from "@/components/GraphResultPanel";
@@ -19,7 +18,6 @@ export default function Home() {
   const [result, setResult] = useState<GraphSolveResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   useEffect(() => {
     const user = loadUser();
@@ -39,7 +37,6 @@ export default function Home() {
       setResult(res);
       if (res.points) setPoints(res.points);
       if (res.edges) setEdges(res.edges);
-      setHistoryRefreshKey((k) => k + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "経路計算に失敗しました");
     } finally {
@@ -57,11 +54,6 @@ export default function Home() {
         <div className="space-y-6">
           <PointSelector onSolve={handleSolve} loading={loading} />
           {result && <GraphResultPanel result={result} />}
-          <HistoryPanel
-            userId={currentUser.username}
-            refreshKey={historyRefreshKey}
-            onLoadHistory={() => {}}
-          />
         </div>
 
         <div className="md:col-span-2 space-y-4">
