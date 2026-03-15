@@ -1,6 +1,7 @@
 import os
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from datetime import datetime, timezone
+from werkzeug.security import generate_password_hash, check_password_hash
 
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = "anti_tsp"
@@ -25,56 +26,99 @@ def get_collection(name="city_sets"):
 
 def ensure_indexes():
     """全コレクションのインデックスを作成"""
-    # users: username ユニークインデックス
     get_collection("users").create_index(
-        [("username", ASCENDING)],
-        unique=True,
-        name="idx_users_username_unique",
+        [("username", ASCENDING)], unique=True, name="idx_users_username_unique",
     )
-    # calculation_history: user_id + calculated_at 複合インデックス
+    get_collection("users").create_index(
+        [("email", ASCENDING)], unique=True, name="idx_users_email_unique",
+    )
     get_collection("calculation_history").create_index(
         [("user_id", ASCENDING), ("calculated_at", DESCENDING)],
         name="idx_history_user_calculated",
     )
-    # city_sets: user_id インデックス
     get_collection("city_sets").create_index(
-        [("user_id", ASCENDING)],
-        name="idx_city_sets_user_id",
+        [("user_id", ASCENDING)], name="idx_city_sets_user_id",
     )
     print("[DB] Indexes ensured.")
 
 
-# === Users ===
+def _sanitize_user(doc: dict) -> dict:
+    """password_hash を除外してユーザー情報を返す"""
+    doc["_id"] = str(doc["_id"])
+    doc.pop("password_hash", None)
+    return doc
 
-def create_user(username: str, display_name: str | None = None) -> dict:
-    col = get_collection("users")
+
+# === Auth / Users ===
+
+def create_user(username: str, email: str, password: str, display_name: str | None = None) -> dict:
     doc = {
         "username": username,
+        "email": email,
+        "password_hash": generate_password_hash(password),
         "display_name": display_name or username,
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     try:
-        result = col.insert_one(doc)
+        result = get_collection("users").insert_one(doc)
         doc["_id"] = str(result.inserted_id)
+        doc.pop("password_hash")
         return doc
     except Exception as e:
-        if "E11000" in str(e):
-            raise ValueError(f"ユーザー名 '{username}' は既に使用されています")
+        err = str(e)
+        if "E11000" in err and "email" in err:
+            raise ValueError("このメールアドレスは既に使用されています")
+        if "E11000" in err and "username" in err:
+            raise ValueError("このユーザー名は既に使用されています")
+        if "E11000" in err:
+            raise ValueError("ユーザー名またはメールアドレスが重複しています")
         raise
+
+
+def authenticate_user(email: str, password: str) -> dict | None:
+    doc = get_collection("users").find_one({"email": email})
+    if not doc:
+        return None
+    if not check_password_hash(doc["password_hash"], password):
+        return None
+    return _sanitize_user(doc)
 
 
 def find_user(username: str) -> dict | None:
     doc = get_collection("users").find_one({"username": username})
     if doc:
-        doc["_id"] = str(doc["_id"])
-    return doc
+        return _sanitize_user(doc)
+    return None
 
 
 def list_users() -> list[dict]:
     docs = list(get_collection("users").find().sort("created_at", DESCENDING))
-    for d in docs:
-        d["_id"] = str(d["_id"])
-    return docs
+    return [_sanitize_user(d) for d in docs]
+
+
+def update_user(username: str, updates: dict) -> dict | None:
+    """ユーザー情報を更新。password指定時はハッシュ化。"""
+    set_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    if "display_name" in updates:
+        set_fields["display_name"] = updates["display_name"]
+    if "password" in updates:
+        set_fields["password_hash"] = generate_password_hash(updates["password"])
+
+    if len(set_fields) <= 1:
+        return find_user(username)
+
+    get_collection("users").update_one(
+        {"username": username}, {"$set": set_fields}
+    )
+    return find_user(username)
+
+
+def verify_password(username: str, password: str) -> bool:
+    doc = get_collection("users").find_one({"username": username})
+    if not doc:
+        return False
+    return check_password_hash(doc["password_hash"], password)
 
 
 def get_user_profile_with_stats(username: str) -> dict | None:
@@ -83,21 +127,19 @@ def get_user_profile_with_stats(username: str) -> dict | None:
         {"$match": {"username": username}},
         {"$lookup": {
             "from": "calculation_history",
-            "localField": "username",
-            "foreignField": "user_id",
+            "localField": "username", "foreignField": "user_id",
             "as": "_histories",
         }},
         {"$lookup": {
             "from": "city_sets",
-            "localField": "username",
-            "foreignField": "user_id",
+            "localField": "username", "foreignField": "user_id",
             "as": "_city_sets",
         }},
         {"$addFields": {
             "history_count": {"$size": "$_histories"},
             "city_sets_count": {"$size": "$_city_sets"},
         }},
-        {"$project": {"_histories": 0, "_city_sets": 0}},
+        {"$project": {"_histories": 0, "_city_sets": 0, "password_hash": 0}},
     ]
     results = list(get_collection("users").aggregate(pipeline))
     if not results:
@@ -128,8 +170,7 @@ def get_user_history_with_lookup(user_id: str, limit: int = 50) -> list[dict]:
         {"$match": {"user_id": user_id}},
         {"$lookup": {
             "from": "users",
-            "localField": "user_id",
-            "foreignField": "username",
+            "localField": "user_id", "foreignField": "username",
             "as": "user",
         }},
         {"$unwind": {"path": "$user", "preserveNullAndEmptyArrays": True}},
@@ -140,6 +181,7 @@ def get_user_history_with_lookup(user_id: str, limit: int = 50) -> list[dict]:
     for r in results:
         r["_id"] = str(r["_id"])
         if "user" in r and r["user"]:
+            r["user"].pop("password_hash", None)
             r["user"]["_id"] = str(r["user"]["_id"])
     return results
 

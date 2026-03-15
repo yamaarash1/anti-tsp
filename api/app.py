@@ -10,7 +10,7 @@ CORS(app)
 from solve import solve_route
 from geocode import geocode
 from cities import list_city_sets_route, create_city_set, delete_city_set_route
-from users import create_user_route, get_users_route
+from users import register_route, login_route, get_me_route, update_me_route, get_users_route
 from history import get_history_route
 
 app.add_url_rule("/api/solve", view_func=solve_route, methods=["POST"])
@@ -18,11 +18,13 @@ app.add_url_rule("/api/geocode", view_func=geocode, methods=["POST"])
 app.add_url_rule("/api/cities", view_func=list_city_sets_route, methods=["GET"])
 app.add_url_rule("/api/cities", view_func=create_city_set, methods=["POST"])
 app.add_url_rule("/api/cities", endpoint="delete_city_set", view_func=delete_city_set_route, methods=["DELETE"])
-app.add_url_rule("/api/users", view_func=create_user_route, methods=["POST"])
+app.add_url_rule("/api/auth/register", view_func=register_route, methods=["POST"])
+app.add_url_rule("/api/auth/login", view_func=login_route, methods=["POST"])
+app.add_url_rule("/api/users/me", view_func=get_me_route, methods=["GET"])
+app.add_url_rule("/api/users/me", endpoint="update_me", view_func=update_me_route, methods=["PUT"])
 app.add_url_rule("/api/users", view_func=get_users_route, methods=["GET"])
 app.add_url_rule("/api/history", view_func=get_history_route, methods=["GET"])
 
-# 初回リクエスト時にインデックス作成
 _indexes_done = False
 
 @app.before_request

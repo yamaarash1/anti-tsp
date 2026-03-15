@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from utils.db import get_db, ensure_indexes
 from utils.tsp_solver import solve
+from werkzeug.security import generate_password_hash
 
 db = get_db()
 
@@ -20,11 +21,12 @@ db.calculation_history.delete_many({})
 # === インデックス作成 ===
 ensure_indexes()
 
-# === ユーザー ===
+# === ユーザー (全員パスワード: password123) ===
+DEFAULT_PW = generate_password_hash("password123")
 USERS = [
-    {"username": "taro", "display_name": "太郎", "created_at": "2026-01-10T09:00:00+00:00"},
-    {"username": "hanako", "display_name": "花子", "created_at": "2026-02-15T10:00:00+00:00"},
-    {"username": "jiro", "display_name": "次郎", "created_at": "2026-03-01T11:00:00+00:00"},
+    {"username": "taro", "email": "taro@example.com", "password_hash": DEFAULT_PW, "display_name": "太郎", "created_at": "2026-01-10T09:00:00+00:00", "updated_at": "2026-01-10T09:00:00+00:00"},
+    {"username": "hanako", "email": "hanako@example.com", "password_hash": DEFAULT_PW, "display_name": "花子", "created_at": "2026-02-15T10:00:00+00:00", "updated_at": "2026-02-15T10:00:00+00:00"},
+    {"username": "jiro", "email": "jiro@example.com", "password_hash": DEFAULT_PW, "display_name": "次郎", "created_at": "2026-03-01T11:00:00+00:00", "updated_at": "2026-03-01T11:00:00+00:00"},
 ]
 db.users.insert_many(USERS)
 print(f"  users: {len(USERS)} 件挿入")

@@ -1,24 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import AddressForm from "@/components/AddressForm";
 import ResultPanel from "@/components/ResultPanel";
 import CitySetManager from "@/components/CitySetManager";
-import UserSelector from "@/components/UserSelector";
 import HistoryPanel from "@/components/HistoryPanel";
+import Header from "@/components/Header";
 import { Location, SolveResult, User } from "@/lib/types";
 import { geocodeAddresses, solveRoutes } from "@/lib/api";
+import { loadUser } from "@/lib/auth";
 
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
 
 export default function Home() {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [locations, setLocations] = useState<Location[] | null>(null);
   const [result, setResult] = useState<SolveResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const user = loadUser();
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    setCurrentUser(user);
+  }, [router]);
 
   const handleSubmit = async (addresses: string[]) => {
     setLoading(true);
@@ -28,19 +40,17 @@ export default function Home() {
       const locs = await geocodeAddresses(addresses);
       const failed = locs.filter((l) => l.lat === null);
       if (failed.length > 0) {
-        setError(
-          `以下の住所が見つかりませんでした: ${failed.map((l) => l.name).join(", ")}`
-        );
+        setError(`以下の住所が見つかりませんでした: ${failed.map((l) => l.name).join(", ")}`);
         setLoading(false);
         return;
       }
       setLocations(locs);
       const res = await solveRoutes(locs, currentUser?.username);
       setResult(res);
-      if (currentUser) setHistoryRefreshKey((k) => k + 1);
+      setHistoryRefreshKey((k) => k + 1);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "エラーが発生しました";
-      setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
+      setError(msg.includes("fetch") ? "APIサーバーに接続できません" : msg);
     } finally {
       setLoading(false);
     }
@@ -53,10 +63,10 @@ export default function Home() {
     try {
       const res = await solveRoutes(locs, currentUser?.username);
       setResult(res);
-      if (currentUser) setHistoryRefreshKey((k) => k + 1);
+      setHistoryRefreshKey((k) => k + 1);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "エラーが発生しました";
-      setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
+      setError(msg.includes("fetch") ? "APIサーバーに接続できません" : msg);
     } finally {
       setLoading(false);
     }
@@ -68,19 +78,11 @@ export default function Home() {
     setError(null);
   };
 
+  if (!currentUser) return null;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-4 text-2xl font-bold">
-        Anti-TSP — 最長巡回ルート探索
-      </h1>
-
-      <div className="mb-6">
-        <UserSelector
-          currentUser={currentUser}
-          onLogin={setCurrentUser}
-          onLogout={() => setCurrentUser(null)}
-        />
-      </div>
+      <Header user={currentUser} />
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
@@ -88,15 +90,13 @@ export default function Home() {
           <CitySetManager
             locations={locations}
             onLoad={handleLoadCitySet}
-            userId={currentUser?.username}
+            userId={currentUser.username}
           />
-          {currentUser && (
-            <HistoryPanel
-              userId={currentUser.username}
-              refreshKey={historyRefreshKey}
-              onLoadHistory={handleLoadHistory}
-            />
-          )}
+          <HistoryPanel
+            userId={currentUser.username}
+            refreshKey={historyRefreshKey}
+            onLoadHistory={handleLoadHistory}
+          />
         </div>
 
         <div className="space-y-6">

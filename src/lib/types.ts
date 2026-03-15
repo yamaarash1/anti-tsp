@@ -25,8 +25,10 @@ export interface CitySet {
 
 export interface User {
   username: string;
+  email: string;
   display_name?: string;
   created_at: string;
+  updated_at?: string;
   history_count?: number;
   city_sets_count?: number;
 }

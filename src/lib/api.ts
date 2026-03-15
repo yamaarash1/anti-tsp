@@ -8,10 +8,41 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `サーバーに接続できません (HTTP ${res.status})` }));
+    const err = await res.json().catch(() => ({ error: `サーバーエラー (HTTP ${res.status})` }));
     throw new Error(err.error || `サーバーエラー (HTTP ${res.status})`);
   }
   return res.json();
+}
+
+// === Auth ===
+
+export async function register(username: string, email: string, password: string, displayName?: string): Promise<User> {
+  return fetchJSON<User>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ username, email, password, display_name: displayName }),
+  });
+}
+
+export async function login(email: string, password: string): Promise<User> {
+  return fetchJSON<User>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function getCurrentUser(username: string): Promise<User> {
+  return fetchJSON<User>(`/users/me?username=${encodeURIComponent(username)}`);
+}
+
+export async function updateProfile(username: string, updates: {
+  display_name?: string;
+  current_password?: string;
+  new_password?: string;
+}): Promise<User> {
+  return fetchJSON<User>("/users/me", {
+    method: "PUT",
+    body: JSON.stringify({ username, ...updates }),
+  });
 }
 
 // === Geocode ===
@@ -54,24 +85,6 @@ export async function saveCitySet(name: string, locations: Location[], userId?: 
 
 export async function deleteCitySet(id: string): Promise<void> {
   await fetchJSON(`/cities?id=${id}`, { method: "DELETE" });
-}
-
-// === Users ===
-
-export async function createUser(username: string, displayName?: string): Promise<User> {
-  return fetchJSON<User>("/users", {
-    method: "POST",
-    body: JSON.stringify({ username, display_name: displayName }),
-  });
-}
-
-export async function getUser(username: string): Promise<User> {
-  return fetchJSON<User>(`/users?username=${encodeURIComponent(username)}`);
-}
-
-export async function listUsers(): Promise<User[]> {
-  const data = await fetchJSON<{ users: User[] }>("/users");
-  return data.users;
 }
 
 // === History ===
