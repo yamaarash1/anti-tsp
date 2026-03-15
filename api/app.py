@@ -4,7 +4,7 @@ from flask_cors import CORS
 from utils.db import ensure_indexes
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # 各モジュールのルートを登録
 from solve import solve_route
