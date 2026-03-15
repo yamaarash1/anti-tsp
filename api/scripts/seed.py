@@ -201,35 +201,85 @@ db.graph_points.delete_many({})
 db.graph_edges.delete_many({})
 
 GRAPH_POINTS = [
-    {"name": "A", "label": "Alpha",   "x": 0, "y": 5},
-    {"name": "B", "label": "Bravo",   "x": 2, "y": 8},
-    {"name": "C", "label": "Charlie", "x": 5, "y": 8},
-    {"name": "D", "label": "Delta",   "x": 8, "y": 7},
-    {"name": "E", "label": "Echo",    "x": 2, "y": 4},
-    {"name": "F", "label": "Foxtrot", "x": 5, "y": 4},
-    {"name": "G", "label": "Golf",    "x": 3, "y": 2},
-    {"name": "H", "label": "Hotel",   "x": 1, "y": 0},
-    {"name": "I", "label": "India",   "x": 5, "y": 0},
-    {"name": "J", "label": "Juliet",  "x": 8, "y": 1},
+    # 上段 (y=10)
+    {"name": "A", "label": "Alpha",   "x": 0,  "y": 10},
+    {"name": "B", "label": "Bravo",   "x": 3,  "y": 10},
+    {"name": "C", "label": "Charlie", "x": 6,  "y": 10},
+    {"name": "D", "label": "Delta",   "x": 9,  "y": 10},
+    # 上中段 (y=7~8)
+    {"name": "E", "label": "Echo",    "x": 1,  "y": 8},
+    {"name": "F", "label": "Foxtrot", "x": 4,  "y": 8},
+    {"name": "G", "label": "Golf",    "x": 7,  "y": 7},
+    {"name": "H", "label": "Hotel",   "x": 10, "y": 8},
+    # 中段 (y=5)
+    {"name": "I", "label": "India",   "x": 0,  "y": 5},
+    {"name": "J", "label": "Juliet",  "x": 3,  "y": 5},
+    {"name": "K", "label": "Kilo",    "x": 6,  "y": 5},
+    {"name": "L", "label": "Lima",    "x": 9,  "y": 5},
+    # 下中段 (y=2~3)
+    {"name": "M", "label": "Mike",    "x": 1,  "y": 3},
+    {"name": "N", "label": "November","x": 4,  "y": 2},
+    {"name": "O", "label": "Oscar",   "x": 7,  "y": 3},
+    {"name": "P", "label": "Papa",    "x": 10, "y": 2},
+    # 下段 (y=0)
+    {"name": "Q", "label": "Quebec",  "x": 0,  "y": 0},
+    {"name": "R", "label": "Romeo",   "x": 3,  "y": 0},
+    {"name": "S", "label": "Sierra",  "x": 6,  "y": 0},
+    {"name": "T", "label": "Tango",   "x": 9,  "y": 0},
 ]
 
 GRAPH_EDGES = [
-    {"from": "A", "to": "B", "distance": 3.6},
-    {"from": "A", "to": "E", "distance": 2.2},
+    # 上段横
+    {"from": "A", "to": "B", "distance": 3.0},
     {"from": "B", "to": "C", "distance": 3.0},
-    {"from": "B", "to": "E", "distance": 4.0},
-    {"from": "C", "to": "D", "distance": 3.2},
-    {"from": "C", "to": "F", "distance": 4.0},
-    {"from": "D", "to": "F", "distance": 4.2},
-    {"from": "D", "to": "J", "distance": 6.0},
+    {"from": "C", "to": "D", "distance": 3.0},
+    # 上段→上中段（斜め）
+    {"from": "A", "to": "E", "distance": 2.2},
+    {"from": "B", "to": "F", "distance": 2.2},
+    {"from": "C", "to": "G", "distance": 3.2},
+    {"from": "D", "to": "H", "distance": 2.2},
+    # 上中段横
     {"from": "E", "to": "F", "distance": 3.0},
-    {"from": "E", "to": "G", "distance": 2.2},
-    {"from": "E", "to": "H", "distance": 4.1},
-    {"from": "F", "to": "G", "distance": 2.8},
-    {"from": "F", "to": "I", "distance": 4.0},
-    {"from": "G", "to": "H", "distance": 2.8},
-    {"from": "G", "to": "I", "distance": 2.8},
-    {"from": "I", "to": "J", "distance": 3.2},
+    {"from": "F", "to": "G", "distance": 3.2},
+    {"from": "G", "to": "H", "distance": 3.2},
+    # 上中段→中段
+    {"from": "E", "to": "I", "distance": 3.2},
+    {"from": "E", "to": "J", "distance": 3.6},
+    {"from": "F", "to": "J", "distance": 3.2},
+    {"from": "F", "to": "K", "distance": 3.6},
+    {"from": "G", "to": "K", "distance": 2.2},
+    {"from": "H", "to": "L", "distance": 3.2},
+    # 中段横
+    {"from": "I", "to": "J", "distance": 3.0},
+    {"from": "J", "to": "K", "distance": 3.0},
+    {"from": "K", "to": "L", "distance": 3.0},
+    # 中段→下中段
+    {"from": "I", "to": "M", "distance": 2.2},
+    {"from": "J", "to": "N", "distance": 3.2},
+    {"from": "K", "to": "O", "distance": 2.2},
+    {"from": "L", "to": "P", "distance": 3.2},
+    # 下中段横
+    {"from": "M", "to": "N", "distance": 3.2},
+    {"from": "N", "to": "O", "distance": 3.2},
+    {"from": "O", "to": "P", "distance": 3.2},
+    # 下中段→下段
+    {"from": "M", "to": "Q", "distance": 3.2},
+    {"from": "M", "to": "R", "distance": 3.6},
+    {"from": "N", "to": "R", "distance": 2.2},
+    {"from": "N", "to": "S", "distance": 2.8},
+    {"from": "O", "to": "S", "distance": 3.2},
+    {"from": "P", "to": "T", "distance": 2.2},
+    # 下段横
+    {"from": "Q", "to": "R", "distance": 3.0},
+    {"from": "R", "to": "S", "distance": 3.0},
+    {"from": "S", "to": "T", "distance": 3.0},
+    # クロスリンク（ショートカットと大回りを作る）
+    {"from": "A", "to": "I", "distance": 5.0},
+    {"from": "D", "to": "L", "distance": 5.0},
+    {"from": "Q", "to": "I", "distance": 5.0},
+    {"from": "T", "to": "L", "distance": 5.0},
+    {"from": "B", "to": "J", "distance": 5.4},
+    {"from": "G", "to": "L", "distance": 2.8},
 ]
 
 db.graph_points.insert_many(GRAPH_POINTS)
