@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import AddressForm from "@/components/AddressForm";
 import ResultPanel from "@/components/ResultPanel";
 import CitySetManager from "@/components/CitySetManager";
-import { Location, SolveResult } from "@/lib/types";
+import UserSelector from "@/components/UserSelector";
+import HistoryPanel from "@/components/HistoryPanel";
+import { Location, SolveResult, User } from "@/lib/types";
 import { geocodeAddresses, solveRoutes } from "@/lib/api";
 
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
@@ -15,6 +17,8 @@ export default function Home() {
   const [result, setResult] = useState<SolveResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const handleSubmit = async (addresses: string[]) => {
     setLoading(true);
@@ -31,8 +35,9 @@ export default function Home() {
         return;
       }
       setLocations(locs);
-      const res = await solveRoutes(locs);
+      const res = await solveRoutes(locs, currentUser?.username);
       setResult(res);
+      if (currentUser) setHistoryRefreshKey((k) => k + 1);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "エラーが発生しました";
       setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
@@ -46,8 +51,9 @@ export default function Home() {
     setError(null);
     setLoading(true);
     try {
-      const res = await solveRoutes(locs);
+      const res = await solveRoutes(locs, currentUser?.username);
       setResult(res);
+      if (currentUser) setHistoryRefreshKey((k) => k + 1);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "エラーが発生しました";
       setError(msg.includes("fetch") ? "APIサーバーに接続できません。Flask サーバーが起動しているか確認してください。" : msg);
@@ -56,16 +62,41 @@ export default function Home() {
     }
   };
 
+  const handleLoadHistory = (locs: Location[], res: SolveResult) => {
+    setLocations(locs);
+    setResult(res);
+    setError(null);
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">
+      <h1 className="mb-4 text-2xl font-bold">
         Anti-TSP — 最長巡回ルート探索
       </h1>
+
+      <div className="mb-6">
+        <UserSelector
+          currentUser={currentUser}
+          onLogin={setCurrentUser}
+          onLogout={() => setCurrentUser(null)}
+        />
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
           <AddressForm onSubmit={handleSubmit} loading={loading} />
-          <CitySetManager locations={locations} onLoad={handleLoadCitySet} />
+          <CitySetManager
+            locations={locations}
+            onLoad={handleLoadCitySet}
+            userId={currentUser?.username}
+          />
+          {currentUser && (
+            <HistoryPanel
+              userId={currentUser.username}
+              refreshKey={historyRefreshKey}
+              onLoadHistory={handleLoadHistory}
+            />
+          )}
         </div>
 
         <div className="space-y-6">

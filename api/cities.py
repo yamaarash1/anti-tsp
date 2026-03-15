@@ -7,14 +7,16 @@ app = Flask(__name__)
 
 
 @app.route("/api/cities", methods=["GET"])
-def list_city_sets():
+def list_city_sets_route():
     set_id = request.args.get("id")
     if set_id:
         found = find_city_set(set_id)
         if not found:
             return jsonify({"error": "見つかりません"}), 404
         return jsonify(found)
-    return jsonify({"city_sets": load_city_sets()})
+
+    user_id = request.args.get("user_id")
+    return jsonify({"city_sets": load_city_sets(user_id=user_id)})
 
 
 @app.route("/api/cities", methods=["POST"])
@@ -22,6 +24,8 @@ def create_city_set():
     data = request.get_json()
     name = data.get("name")
     locations = data.get("locations")
+    user_id = data.get("user_id")  # オプション
+
     if not name or not locations:
         return jsonify({"error": "name と locations が必要です"}), 400
 
@@ -31,6 +35,9 @@ def create_city_set():
         "locations": locations,
         "created_at": datetime.utcnow().isoformat(),
     }
+    if user_id:
+        new_set["user_id"] = user_id
+
     save_city_set(new_set)
     return jsonify(new_set), 201
 

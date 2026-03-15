@@ -7,16 +7,17 @@ import { listCitySets, saveCitySet, deleteCitySet } from "@/lib/api";
 interface Props {
   locations: Location[] | null;
   onLoad: (locations: Location[]) => void;
+  userId?: string;
 }
 
-export default function CitySetManager({ locations, onLoad }: Props) {
+export default function CitySetManager({ locations, onLoad, userId }: Props) {
   const [sets, setSets] = useState<CitySet[]>([]);
   const [saveName, setSaveName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const refresh = async () => {
     try {
-      setSets(await listCitySets());
+      setSets(await listCitySets(userId));
     } catch {
       // API未起動時は無視
     }
@@ -24,13 +25,13 @@ export default function CitySetManager({ locations, onLoad }: Props) {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [userId]);
 
   const handleSave = async () => {
     if (!saveName.trim() || !locations || locations.length < 3) return;
     setLoading(true);
     try {
-      await saveCitySet(saveName.trim(), locations);
+      await saveCitySet(saveName.trim(), locations, userId);
       setSaveName("");
       await refresh();
     } catch (e) {
@@ -53,7 +54,6 @@ export default function CitySetManager({ locations, onLoad }: Props) {
     <div className="space-y-3">
       <h2 className="text-lg font-bold">都市セット</h2>
 
-      {/* 保存 */}
       {locations && locations.length >= 3 && (
         <div className="flex gap-2">
           <input
@@ -73,7 +73,6 @@ export default function CitySetManager({ locations, onLoad }: Props) {
         </div>
       )}
 
-      {/* 一覧 */}
       {sets.length > 0 && (
         <ul className="space-y-1">
           {sets.map((s) => (
